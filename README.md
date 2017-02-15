@@ -1,2 +1,2 @@
 # Videojuego Galaga -> C
-Universidad Galileo
+Ciencias de la Computación III, Universidad Galileo
