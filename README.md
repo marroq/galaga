@@ -1,1 +1,2 @@
-# galaga
+# Videojuego Galaga -> C
+Universidad Galileo
