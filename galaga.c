@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <allegro5/allegro.h>
-#include "allegro5/allegro.h"
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
 #include "allegro5/allegro_image.h"
 #include <allegro5/allegro_primitives.h>
-#include "allegro5/allegro_primitives.h"
 #include "allegro5/allegro_native_dialog.h"
 
 const float FPS = 60;
@@ -15,8 +13,39 @@ const int SCREEN_W = 640;
 const int SCREEN_H = 480;
 
 enum KEYS {
-   KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT
+   KEY_UP, 
+   KEY_DOWN, 
+   KEY_LEFT, 
+   KEY_RIGHT
 };
+
+typedef struct gamer {
+    int x;
+    int y; 
+    ALLEGRO_BITMAP *nave;
+} galaga_g;
+
+void drawPlayer(galaga_g *player) {
+    al_clear_to_color(al_map_rgb(0, 0, 0));
+    al_draw_bitmap(player->nave, player->x, player->y, 0);
+    al_flip_display();
+}
+
+void moveUp(galaga_g *player) {
+    player->y -= 2;
+}
+
+void moveDown(galaga_g *player) {
+    player->y += 2;
+}
+
+void moveRight(galaga_g *player) {
+    player->x += 2;
+}
+
+void moveLeft(galaga_g *player) {
+    player->x -= 2;
+}
 
 int showMessage(char* winTitle, char* heading, char* message) {
     return al_show_native_message_box(al_get_current_display(), 
@@ -34,7 +63,6 @@ int main(int argc, char **argv) {
     ALLEGRO_EVENT_QUEUE *event_queue = NULL;
     ALLEGRO_TIMER *timer = NULL;
     ALLEGRO_FONT *font = NULL;
-    ALLEGRO_BITMAP *image = NULL;
     
     bool redraw = true;
     bool key[4] = {false, false, false, false};
@@ -130,8 +158,11 @@ int main(int argc, char **argv) {
         return -1;
     }
     
-    image = al_load_bitmap("nave.png");
-    if(!image) {
+    galaga_g *player = (galaga_g *)malloc(sizeof(galaga_g));
+    player->nave = al_load_bitmap("nave.png");
+    player->x = 500;
+    player->y = 540;
+    if(!player->nave) {
         fprintf(stderr,"Failed to load image!");
         al_destroy_timer(timer);
         al_destroy_sample(music);
@@ -147,9 +178,11 @@ int main(int argc, char **argv) {
     al_register_event_source(event_queue, al_get_timer_event_source(timer));
     al_register_event_source(event_queue, al_get_keyboard_event_source());
     al_register_event_source(event_queue, al_get_mouse_event_source());
-    al_draw_bitmap(image,500,540,0);
+    drawPlayer(player);
     al_draw_text(font, al_map_rgb(255,255,255), 500, 10,ALLEGRO_ALIGN_CENTRE, "galaga!");
     al_play_sample(music, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
+    al_inhibit_screensaver(1);
+    al_set_window_title(display, "GALAGA - CIENCIAS DE LA COMPUTACION III");
     al_start_timer(timer);
     al_flip_display();
     
@@ -161,7 +194,7 @@ int main(int argc, char **argv) {
     al_destroy_sample(music);
     al_destroy_timer(timer);
     al_destroy_event_queue(event_queue);
-    al_destroy_bitmap(image);
+    al_destroy_bitmap(player->nave);
     
     return 0;
 }
