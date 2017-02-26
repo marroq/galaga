@@ -8,11 +8,11 @@
 #include <allegro5/allegro_primitives.h>
 #include "allegro5/allegro_native_dialog.h"
 
-const float FPS = 60;
+const float FPS = 30.0;
 const int SCREEN_W = 1000;
 const int SCREEN_H = 600;
 const int LETTER = 60;
-const int REST = 60;
+const int REST = 10;
 
 enum KEYS {
    KEY_UP, 
@@ -34,19 +34,24 @@ void drawPlayer(galaga_g *player) {
 }
 
 void moveUp(galaga_g *player) {
-    player->y -= 2;
+    /*Delimito el movimiento de la nave hasta la mitad de la pantalla*/
+    if (player->y > SCREEN_H/2)
+        player->y -= 3;    
 }
 
 void moveDown(galaga_g *player) {
-    player->y += 2;
+    if (player->y <= SCREEN_H - 120)
+        player->y += 3;    
 }
 
 void moveRight(galaga_g *player) {
-    player->x += 2;
+    if (player->x <= SCREEN_W-60)
+        player->x += 3;
 }
 
 void moveLeft(galaga_g *player) {
-    player->x -= 2;
+    if (player->x > 60) 
+        player->x -= 3;
 }
 
 int showMessage(char* winTitle, char* heading, char* message) {
@@ -66,7 +71,8 @@ int main(int argc, char **argv) {
     ALLEGRO_TIMER *timer = NULL;
     ALLEGRO_FONT *font = NULL;
     
-    bool key[4] = {false, false, false, false};
+    int key[4] = {0, 0, 0, 0};
+    bool exit = true;
     
     /*Inicializar todos los componentes de allegro*/
     if(!al_init()) {
@@ -173,22 +179,78 @@ int main(int argc, char **argv) {
     }
     
     /*Valores default de la pantalla y demas componentes*/
+    al_inhibit_screensaver(1);
+    al_set_window_title(display, "GALAGA - CIENCIAS DE LA COMPUTACION III");
     al_clear_to_color(al_map_rgb(0, 0, 0));
+    al_flip_display();
+    
     al_set_target_bitmap(al_get_backbuffer(display));
-    al_register_event_source(event_queue, al_get_display_event_source(display));
+    //al_register_event_source(event_queue, al_get_display_event_source(display));
     al_register_event_source(event_queue, al_get_timer_event_source(timer));
     al_register_event_source(event_queue, al_get_keyboard_event_source());
     al_register_event_source(event_queue, al_get_mouse_event_source());
+    
+    showMessage("GALAGA","Iniciando...","Empezamos en 10 segundos");
     drawPlayer(player);
     al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, 10, ALLEGRO_ALIGN_CENTRE, "galaga");
-    al_play_sample(music, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
-    al_inhibit_screensaver(1);
-    al_set_window_title(display, "GALAGA - CIENCIAS DE LA COMPUTACION III");
-    al_start_timer(timer);
-    al_flip_display();
     
-    //Por el momento esto para revisar todos
-    al_rest(REST);
+    srand(time(NULL));
+    al_start_timer(timer);
+    
+    al_play_sample(music, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
+    
+    //al_rest(REST);
+    ALLEGRO_EVENT ev;
+    
+    while(exit) {
+        al_wait_for_event(event_queue, &ev);
+        
+        if(ev.type == ALLEGRO_EVENT_KEY_UP) {
+            switch(ev.keyboard.keycode) {
+                case ALLEGRO_KEY_ESCAPE:
+                    exit = false;
+                    break;
+                case ALLEGRO_KEY_UP:
+                    moveUp(player);
+                    break;
+                case ALLEGRO_KEY_DOWN:
+                    moveDown(player);
+                    break;
+                case ALLEGRO_KEY_LEFT:
+                    moveLeft(player);    
+                    break;
+                case ALLEGRO_KEY_RIGHT:
+                    moveRight(player);
+                    break;
+            }
+        } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
+            switch(ev.keyboard.keycode) {
+                case ALLEGRO_KEY_UP:
+                    moveUp(player);
+                    break;
+                case ALLEGRO_KEY_DOWN:
+                    moveDown(player);
+                    break;
+                case ALLEGRO_KEY_LEFT:
+                    moveLeft(player);    
+                    break;
+                case ALLEGRO_KEY_RIGHT:
+                    moveRight(player);
+                    break;
+            }
+        } else if (ev.type == ALLEGRO_EVENT_TIMER) {
+            if(key[KEY_UP])
+                moveUp(player);
+            else if(key[KEY_DOWN])
+                moveDown(player);
+            else if(key[KEY_LEFT])
+                moveLeft(player);
+            else if(key[KEY_RIGHT]) 
+                moveRight(player);
+        }
+        
+        drawPlayer(player);
+    }
     
     /*Limpiar memoria*/
     al_destroy_display(display);
@@ -197,6 +259,6 @@ int main(int argc, char **argv) {
     al_destroy_event_queue(event_queue);
     al_destroy_bitmap(player->nave);
     free(player);
-    
+        
     return 0;
 }
