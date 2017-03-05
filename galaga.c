@@ -20,7 +20,8 @@ enum KEYS {
    KEY_UP, 
    KEY_DOWN, 
    KEY_LEFT, 
-   KEY_RIGHT
+   KEY_RIGHT,
+   KEY_SPACE
 };
 
 typedef struct gamer {
@@ -32,20 +33,42 @@ typedef struct gamer {
 typedef struct Missil {
     int x;
     int y;
-    int sx;
     int sy;
     ALLEGRO_BITMAP *bullet;
 } missil_g;
 
 void drawPlayer(galaga_g *player) {
-    al_clear_to_color(al_map_rgb(0, 0, 0));
+    //al_clear_to_color(al_map_rgb(0, 0, 0));
     al_draw_bitmap(player->nave, player->x, player->y, 0);
     al_flip_display();
 }
 
-void drawBullet(missil_g *missil) {
+void shutter(galaga_g *player, ALLEGRO_EVENT *ev) {
+    missil_g *missil = (missil_g*) malloc (sizeof(missil_g));
+    missil->bullet = al_load_bitmap("shot.png");
+    missil->x = player->x + 15;
+    missil->y = player->y - 15;
+    missil->sy = 10;
+    if (!missil->bullet) {
+        fprintf(stderr,"Failed to load shot image!");
+    }
+    
     al_draw_bitmap(missil->bullet, missil->x, missil->y, 0);
     al_flip_display();
+    
+    bool redraw;
+    
+    while (!redraw) {
+        if (missil->y > 60) {
+            missil->y -= missil->sy; 
+        } else redraw = true;
+        
+        al_clear_to_color(al_map_rgb(0, 0, 0));
+        al_draw_bitmap(missil->bullet, missil->x, missil->y, 0);
+        al_flip_display();
+    }
+    
+    free(missil);
 }
 
 void moveUp(galaga_g *player) {
@@ -194,20 +217,6 @@ int main(int argc, char **argv) {
         return 0;
     }
     
-    missil_g *missil = (missil_g*) malloc (sizeof(missil_g));
-    missil->bullet = al_load_bitmap("shot.png");
-    missil->x = player->x + 15;
-    missil->y = player->y - 15;
-    if (!missil->bullet) {
-        fprintf(stderr,"Failed to load shot image!");
-        al_destroy_timer(timer);
-        al_destroy_sample(music);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_queue);
-        al_destroy_bitmap(player->nave);
-        return 0;
-    }
-    
     /*Valores default de la pantalla y demas componentes*/
     al_inhibit_screensaver(1);
     al_set_window_title(display, "GALAGA - CIENCIAS DE LA COMPUTACION III");
@@ -253,6 +262,7 @@ int main(int argc, char **argv) {
                     moveRight(player);
                     break;
                 case ALLEGRO_KEY_SPACE:
+                    shutter(player, &ev);
                     break;
             }
         } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
@@ -282,8 +292,6 @@ int main(int argc, char **argv) {
         }
         
         drawPlayer(player);
-        /*FUNCION DEBE SER CONTROLADA POSTERIORMENTE POR EL THREAD QUE DISPARA LA BALA*/
-        drawBullet(missil);
     }
     
     /*Limpiar memoria*/
@@ -292,8 +300,7 @@ int main(int argc, char **argv) {
     al_destroy_timer(timer);
     al_destroy_event_queue(event_queue);
     al_destroy_bitmap(player->nave);
-    al_destroy_bitmap(missil->bullet);
     free(player);
-        
+    
     return 0;
 }
