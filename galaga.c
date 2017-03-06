@@ -57,17 +57,26 @@ void createBullet(galaga_g* player, missil_g *missil, int *disparo, int maxDispa
 }
 
 void drawEnemies(enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, int matriz[XMATRIZ][YMATRIZ]) {
-    int i, x, y, mx, my;
+    int i, mx, my;
+    bool row2 = true;
     
-    for (i=0, mx=0, my=0, x=posEnemy->x, y=posEnemy->y; i<ENEMIES; i++, x+=SEPARATOR, my++) {    
-        if (x > SCREEN_W - 100) {
-            y += 30;
+    for (i=0, mx=0, my=0, posEnemy[i].x = SCREEN_W - 920, posEnemy[i].y = SCREEN_H - 530; i<ENEMIES; my++, i++) {     
+        if (i>0 && (posEnemy[i-1].x + SEPARATOR) > SCREEN_W - 100) {
+            posEnemy[i].x = posEnemy[0].x;
+            posEnemy[i].y = SCREEN_H - 500;
             mx = 1;
-            x = posEnemy->x;
-            my = 0;   
+            my = 0;
+            row2 = false;
+        } else if (i>0 && row2) {
+            posEnemy[i].x = posEnemy[i-1].x + SEPARATOR;
+            posEnemy[i].y = SCREEN_H - 530;
+        } else if (i>0 && !row2) {
+            posEnemy[i].x = posEnemy[i-1].x + SEPARATOR;
+            posEnemy[i].y = SCREEN_H - 500;
         }
+        
         if (matriz[mx][my] == 1) {
-            al_draw_bitmap(enemy, x, y ,0);  
+            al_draw_bitmap(enemy, posEnemy[i].x, posEnemy[i].y ,0);
         }
     }
 }
@@ -82,13 +91,13 @@ void scene(galaga_g *player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_F
 
 void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy,  int *disparo, int maxDisparo, ALLEGRO_FONT *font, int matriz[XMATRIZ][YMATRIZ]) {
     bool redraw;
-        
+    
     if (*disparo < maxDisparo) {
         while (!redraw) {
             al_clear_to_color(al_map_rgb(0, 0, 0));
             
             if (missil[*disparo].y > LIMITBULLET) {
-                missil[*disparo].y -= missil[*disparo].sy;   
+                missil[*disparo].y -= missil[*disparo].sy;
             } else redraw = true;  
             
             al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
@@ -267,9 +276,7 @@ int main(int argc, char **argv) {
         return 0;
     }
     
-    enemy_g *enemy = (enemy_g*) malloc (sizeof(enemy_g));
-    enemy->x = SCREEN_W - 920;
-    enemy->y = SCREEN_H - 530;
+    enemy_g *enemy = (enemy_g*) malloc (ENEMIES * sizeof(enemy_g));
     nenemy = al_load_bitmap("enemy.png");
     if (!nenemy) {
         fprintf(stderr,"Failed to load shot image!");
