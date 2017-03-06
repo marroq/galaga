@@ -4,7 +4,7 @@ Ciencias de la Computación III, Universidad Galileo
 GALAGA GAME
 
 INTEGRANTES:
-	Fernando Figueroa Esquivel 13000530
+	Douglas Fernando Figueroa Esquivel 13000530
 	Diego Jose Claveria Batres 13003819
 
 GENERO:
