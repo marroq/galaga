@@ -1,6 +1,7 @@
 //729110-8 Empresa Comercial Niamaria S.A.
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
@@ -15,6 +16,8 @@ const int SCREEN_W = 1000;
 const int SCREEN_H = 600;
 const int LETTER = 60;
 const int REST = 10;
+const int CANTDISPAROS = 5;
+const int VELOCITY = 15;
 
 enum KEYS {
    KEY_UP, 
@@ -34,41 +37,41 @@ typedef struct Missil {
     int x;
     int y;
     int sy;
-    ALLEGRO_BITMAP *bullet;
 } missil_g;
 
 void drawPlayer(galaga_g *player) {
-    //al_clear_to_color(al_map_rgb(0, 0, 0));
+    al_clear_to_color(al_map_rgb(0, 0, 0));
     al_draw_bitmap(player->nave, player->x, player->y, 0);
     al_flip_display();
 }
 
-void shutter(galaga_g *player, ALLEGRO_EVENT *ev) {
-    missil_g *missil = (missil_g*) malloc (sizeof(missil_g));
-    missil->bullet = al_load_bitmap("shot.png");
-    missil->x = player->x + 15;
-    missil->y = player->y - 15;
-    missil->sy = 10;
-    if (!missil->bullet) {
-        fprintf(stderr,"Failed to load shot image!");
+void createBullet(galaga_g* player, missil_g *missil, int *disparo, int maxDisparo, int sy) {
+    if (*disparo < maxDisparo) {
+        missil[*disparo].x = player->x + 15;
+        missil[*disparo].y = player->y - 15;
+        missil[*disparo].sy = sy;
     }
-    
-    al_draw_bitmap(missil->bullet, missil->x, missil->y, 0);
-    al_flip_display();
-    
+}
+
+void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, int *disparo, int maxDisparo) {
     bool redraw;
+    //short i;
     
-    while (!redraw) {
-        if (missil->y > 60) {
-            missil->y -= missil->sy; 
-        } else redraw = true;
-        
-        al_clear_to_color(al_map_rgb(0, 0, 0));
-        al_draw_bitmap(missil->bullet, missil->x, missil->y, 0);
-        al_flip_display();
+    if (*disparo < maxDisparo) {
+        while (!redraw) {
+            al_clear_to_color(al_map_rgb(0, 0, 0));
+            
+            if (missil[*disparo].y > 20) {
+                missil[*disparo].y -= missil[*disparo].sy;   
+            } else redraw = true;  
+            
+            al_draw_bitmap(bullet, missil[*disparo].x, missil[*disparo].y, 0);
+            al_draw_bitmap(player->nave, player->x, player->y, 0);
+            al_flip_display();   
+        }
     }
     
-    free(missil);
+    (*disparo)++;
 }
 
 void moveUp(galaga_g *player) {
@@ -108,6 +111,7 @@ int main(int argc, char **argv) {
     ALLEGRO_EVENT_QUEUE *event_queue = NULL;
     ALLEGRO_TIMER *timer = NULL;
     ALLEGRO_FONT *font = NULL;
+    ALLEGRO_BITMAP *bullet = NULL;
     
     int key[4] = {0, 0, 0, 0};
     bool exit = true;
@@ -203,7 +207,6 @@ int main(int argc, char **argv) {
         return -1;
     }
     
-    
     galaga_g *player = (galaga_g *)malloc(sizeof(galaga_g));
     player->nave = al_load_bitmap("nave.png");
     player->x = SCREEN_W/2;
@@ -214,6 +217,18 @@ int main(int argc, char **argv) {
         al_destroy_sample(music);
         al_destroy_display(display);
         al_destroy_event_queue(event_queue);
+        return 0;
+    }
+    
+    missil_g *missil = (missil_g*)malloc(CANTDISPAROS * sizeof(missil_g));
+    bullet = al_load_bitmap("shot.png");
+    if (!bullet) {
+        fprintf(stderr,"Failed to load shot image!");
+        al_destroy_timer(timer);
+        al_destroy_sample(music);
+        al_destroy_display(display);
+        al_destroy_event_queue(event_queue);
+        al_destroy_bitmap(player->nave);
         return 0;
     }
     
@@ -229,7 +244,7 @@ int main(int argc, char **argv) {
     al_register_event_source(event_queue, al_get_keyboard_event_source());
     al_register_event_source(event_queue, al_get_mouse_event_source());
     
-    showMessage("GALAGA","Iniciando...","Empezamos en 10 segundos");
+    //showMessage("GALAGA","Iniciando...","Empezamos en 10 segundos");
     drawPlayer(player);
     al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, 10, ALLEGRO_ALIGN_CENTRE, "galaga");
     
@@ -240,6 +255,7 @@ int main(int argc, char **argv) {
     
     //al_rest(REST);
     ALLEGRO_EVENT ev;
+    int sCount = 0;
     
     while(exit) {
         al_wait_for_event(event_queue, &ev);
@@ -262,7 +278,8 @@ int main(int argc, char **argv) {
                     moveRight(player);
                     break;
                 case ALLEGRO_KEY_SPACE:
-                    shutter(player, &ev);
+                    createBullet(player, missil, &sCount, CANTDISPAROS, VELOCITY);
+                    shutter(player, missil, bullet, &sCount, CANTDISPAROS);
                     break;
             }
         } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
@@ -300,7 +317,10 @@ int main(int argc, char **argv) {
     al_destroy_timer(timer);
     al_destroy_event_queue(event_queue);
     al_destroy_bitmap(player->nave);
+    al_destroy_bitmap(bullet);
     free(player);
+    free(missil);
     
     return 0;
 }
+
