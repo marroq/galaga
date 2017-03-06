@@ -1,5 +1,3 @@
-//729110-8 Empresa Comercial Niamaria S.A.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <allegro5/allegro.h>
@@ -18,6 +16,9 @@ const int LETTER = 60;
 const int REST = 10;
 const int CANTDISPAROS = 5;
 const int VELOCITY = 15;
+const int ENEMIES = 42;
+const int SEPARATOR = 40;
+const int ALIGNFONT = 5;
 
 enum KEYS {
    KEY_UP, 
@@ -39,17 +40,29 @@ typedef struct Missil {
     int sy;
 } missil_g;
 
-//  nave enemiga ----------------------------------------------
-typedef struct Enemy1 {
+typedef struct Enemy {
     int x;
     int y;
-    ALLEGRO_BITMAP *nave1;
-} enemy1_g;
-
+} enemy_g;
 
 void drawPlayer(galaga_g *player) {
     al_clear_to_color(al_map_rgb(0, 0, 0));
     al_draw_bitmap(player->nave, player->x, player->y, 0);
+    al_flip_display();
+}
+
+void scene(galaga_g *player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_FONT *font) {
+    al_clear_to_color(al_map_rgb(0, 0, 0));
+    al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
+    al_draw_bitmap(player->nave, player->x, player->y, 0);
+    int i, x, y;
+    for (i=0, x=posEnemy->x, y=posEnemy->y; i<ENEMIES; i++, x+=SEPARATOR) {
+        if (x > SCREEN_W - 100) {
+            y += 30;
+            x = posEnemy->x;        
+        }
+        al_draw_bitmap(enemy, x, y ,0);
+    }
     al_flip_display();
 }
 
@@ -61,9 +74,19 @@ void createBullet(galaga_g* player, missil_g *missil, int *disparo, int maxDispa
     }
 }
 
-void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, int *disparo, int maxDisparo) {
+void drawEnemies(enemy_g *posEnemy, ALLEGRO_BITMAP *enemy) {
+    int i, x, y;
+    for (i=0, x=posEnemy->x, y=posEnemy->y; i<ENEMIES; i++, x+=SEPARATOR) {
+        if (x > SCREEN_W - 100) {
+            y += 30;
+            x = posEnemy->x;        
+        }
+        al_draw_bitmap(enemy, x, y ,0);
+    }
+}
+
+void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy,  int *disparo, int maxDisparo, ALLEGRO_FONT *font) {
     bool redraw;
-    //short i;
     
     if (*disparo < maxDisparo) {
         while (!redraw) {
@@ -73,8 +96,10 @@ void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, int *di
                 missil[*disparo].y -= missil[*disparo].sy;   
             } else redraw = true;  
             
+            al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
             al_draw_bitmap(bullet, missil[*disparo].x, missil[*disparo].y, 0);
             al_draw_bitmap(player->nave, player->x, player->y, 0);
+            drawEnemies(posEnemy, enemy);
             al_flip_display();   
         }
     }
@@ -82,17 +107,9 @@ void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, int *di
     (*disparo)++;
 }
 
-void drawNave1(enemy1_g *enemy1 ) {
-    al_draw_bitmap(enemy1->nave1, enemy1->x, enemy1->y, 0);
-    al_flip_display();
-}
-
-
-// funcion para redibujar nave--------------------------------------
-
-void moverightnave(enemy1_g *enemy1) {
-    if (enemy1->x < SCREEN_W) 
-        enemy1->x += 130;
+void moverightnave(enemy_g *enemy) {
+    if (enemy->x < SCREEN_W) 
+        enemy->x += 130;
 }
 
 void moveUp(galaga_g *player) {
@@ -133,6 +150,7 @@ int main(int argc, char **argv) {
     ALLEGRO_TIMER *timer = NULL;
     ALLEGRO_FONT *font = NULL;
     ALLEGRO_BITMAP *bullet = NULL;
+    ALLEGRO_BITMAP *nenemy = NULL;
     
     int key[4] = {0, 0, 0, 0};
     bool exit = true;
@@ -229,7 +247,7 @@ int main(int argc, char **argv) {
     }
     
     galaga_g *player = (galaga_g *)malloc(sizeof(galaga_g));
-    player->nave = al_load_bitmap("nave.png");
+    player->nave = al_load_bitmap("navedispara.png");
     player->x = SCREEN_W/2;
     player->y = SCREEN_H-60;
     if(!player->nave) {
@@ -240,22 +258,6 @@ int main(int argc, char **argv) {
         al_destroy_event_queue(event_queue);
         return 0;
     }
-
-    // NAVE NEMIGA --------------------------------------------------------
-    enemy1_g *enemy1 = (enemy1_g*) malloc (sizeof(enemy1_g));
-    enemy1->nave1 = al_load_bitmap("nave1.png");
-    enemy1->x = 25;
-    enemy1->y = 100;
-    if (!enemy1->nave1) {
-        fprintf(stderr,"Failed to load shot image!");
-        al_destroy_timer(timer);
-        al_destroy_sample(music);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_queue);
-        al_destroy_bitmap(player->nave);
-        return 0;
-    }
-
     
     missil_g *missil = (missil_g*)malloc(CANTDISPAROS * sizeof(missil_g));
     bullet = al_load_bitmap("shot.png");
@@ -269,11 +271,25 @@ int main(int argc, char **argv) {
         return 0;
     }
     
+    enemy_g *enemy = (enemy_g*) malloc (sizeof(enemy_g));
+    enemy->x = SCREEN_W - 920;
+    enemy->y = SCREEN_H - 530;
+    nenemy = al_load_bitmap("enemy.png");
+    if (!nenemy) {
+        fprintf(stderr,"Failed to load shot image!");
+        al_destroy_timer(timer);
+        al_destroy_sample(music);
+        al_destroy_display(display);
+        al_destroy_event_queue(event_queue);
+        al_destroy_bitmap(player->nave);
+        al_destroy_bitmap(bullet);
+        return 0;
+    }
+    
     /*Valores default de la pantalla y demas componentes*/
     al_inhibit_screensaver(1);
     al_set_window_title(display, "GALAGA - CIENCIAS DE LA COMPUTACION III");
     al_clear_to_color(al_map_rgb(0, 0, 0));
-    al_flip_display();
     
     al_set_target_bitmap(al_get_backbuffer(display));
     //al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -281,22 +297,19 @@ int main(int argc, char **argv) {
     al_register_event_source(event_queue, al_get_keyboard_event_source());
     al_register_event_source(event_queue, al_get_mouse_event_source());
     
-    //showMessage("GALAGA","Iniciando...","Empezamos en 10 segundos");
-    drawPlayer(player);
-    al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, 10, ALLEGRO_ALIGN_CENTRE, "galaga");
+    scene(player, enemy, nenemy, font);
     
     srand(time(NULL));
     al_start_timer(timer);
     
     al_play_sample(music, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
+    al_flip_display();
     
+    //showMessage("GALAGA","Iniciando...","Ciencias de la Computacion III");
     //al_rest(REST);
     ALLEGRO_EVENT ev;
     int sCount = 0;
     
- 
-
-
     while(exit) {
         al_wait_for_event(event_queue, &ev);
         
@@ -319,7 +332,7 @@ int main(int argc, char **argv) {
                     break;
                 case ALLEGRO_KEY_SPACE:
                     createBullet(player, missil, &sCount, CANTDISPAROS, VELOCITY);
-                    shutter(player, missil, bullet, &sCount, CANTDISPAROS);
+                    shutter(player, missil, bullet, enemy, nenemy, &sCount, CANTDISPAROS, font);
                     break;
             }
         } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
@@ -348,14 +361,7 @@ int main(int argc, char **argv) {
                 moveRight(player);
         }
         
-        drawPlayer(player);
-        int x;
-        for(x = 50; x < 1000; x = x + 100){
-        moverightnave(enemy1);          
-        drawNave1(enemy1);
-        }
-
-
+        scene(player, enemy, nenemy, font);
     }
     
     /*Limpiar memoria*/
@@ -365,8 +371,10 @@ int main(int argc, char **argv) {
     al_destroy_event_queue(event_queue);
     al_destroy_bitmap(player->nave);
     al_destroy_bitmap(bullet);
+    al_destroy_bitmap(nenemy);
     free(player);
     free(missil);
+    free(enemy);
     
     return 0;
 }
