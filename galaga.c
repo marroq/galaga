@@ -20,6 +20,8 @@ const int ENEMIES = 42;
 const int SEPARATOR = 40;
 const int ALIGNFONT = 5;
 const int LIMITBULLET = 80;
+const int XMATRIZ = 2;
+const int YMATRIZ = 21;
 
 enum KEYS {
    KEY_UP, 
@@ -46,21 +48,6 @@ typedef struct Enemy {
     int y;
 } enemy_g;
 
-void scene(galaga_g *player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_FONT *font) {
-    al_clear_to_color(al_map_rgb(0, 0, 0));
-    al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
-    al_draw_bitmap(player->nave, player->x, player->y, 0);
-    int i, x, y;
-    for (i=0, x=posEnemy->x, y=posEnemy->y; i<ENEMIES; i++, x+=SEPARATOR) {
-        if (x > SCREEN_W - 100) {
-            y += 30;
-            x = posEnemy->x;        
-        }
-        al_draw_bitmap(enemy, x, y ,0);
-    }
-    al_flip_display();
-}
-
 void createBullet(galaga_g* player, missil_g *missil, int *disparo, int maxDisparo, int sy) {
     if (*disparo < maxDisparo) {
         missil[*disparo].x = player->x + 15;
@@ -69,20 +56,33 @@ void createBullet(galaga_g* player, missil_g *missil, int *disparo, int maxDispa
     }
 }
 
-void drawEnemies(enemy_g *posEnemy, ALLEGRO_BITMAP *enemy) {
-    int i, x, y;
-    for (i=0, x=posEnemy->x, y=posEnemy->y; i<ENEMIES; i++, x+=SEPARATOR) {
+void drawEnemies(enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, int matriz[XMATRIZ][YMATRIZ]) {
+    int i, x, y, mx, my;
+    
+    for (i=0, mx=0, my=0, x=posEnemy->x, y=posEnemy->y; i<ENEMIES; i++, x+=SEPARATOR, my++) {    
         if (x > SCREEN_W - 100) {
             y += 30;
-            x = posEnemy->x;        
+            mx = 1;
+            x = posEnemy->x;
+            my = 0;   
         }
-        al_draw_bitmap(enemy, x, y ,0);
+        if (matriz[mx][my] == 1) {
+            al_draw_bitmap(enemy, x, y ,0);  
+        }
     }
 }
 
-void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy,  int *disparo, int maxDisparo, ALLEGRO_FONT *font) {
+void scene(galaga_g *player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_FONT *font, int matriz[XMATRIZ][YMATRIZ]) {
+    al_clear_to_color(al_map_rgb(0, 0, 0));
+    al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
+    al_draw_bitmap(player->nave, player->x, player->y, 0);
+    drawEnemies(posEnemy, enemy, matriz);
+    al_flip_display();
+}
+
+void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy,  int *disparo, int maxDisparo, ALLEGRO_FONT *font, int matriz[XMATRIZ][YMATRIZ]) {
     bool redraw;
-    
+        
     if (*disparo < maxDisparo) {
         while (!redraw) {
             al_clear_to_color(al_map_rgb(0, 0, 0));
@@ -94,7 +94,7 @@ void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g
             al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
             al_draw_bitmap(bullet, missil[*disparo].x, missil[*disparo].y, 0);
             al_draw_bitmap(player->nave, player->x, player->y, 0);
-            drawEnemies(posEnemy, enemy);
+            drawEnemies(posEnemy, enemy, matriz);
             al_flip_display();   
         }
     }
@@ -149,6 +149,7 @@ int main(int argc, char **argv) {
     
     int key[4] = {0, 0, 0, 0};
     bool exit = true;
+    int matriz[XMATRIZ][YMATRIZ];
     
     /*Inicializar todos los componentes de allegro*/
     if(!al_init()) {
@@ -281,6 +282,16 @@ int main(int argc, char **argv) {
         return 0;
     }
     
+    /*lleno matriz de naves enemigas*/
+    int matx, maty, c;
+    for (c=0, matx=0, maty=0; c<ENEMIES; maty++, c++) {
+        if (maty==YMATRIZ) {
+            matx=1;
+            maty=0;            
+        }
+        matriz[matx][maty] = 1;
+    }
+    
     /*Valores default de la pantalla y demas componentes*/
     al_inhibit_screensaver(1);
     al_set_window_title(display, "GALAGA - CIENCIAS DE LA COMPUTACION III");
@@ -292,7 +303,7 @@ int main(int argc, char **argv) {
     al_register_event_source(event_queue, al_get_keyboard_event_source());
     al_register_event_source(event_queue, al_get_mouse_event_source());
     
-    scene(player, enemy, nenemy, font);
+    scene(player, enemy, nenemy, font, matriz);
     
     srand(time(NULL));
     al_start_timer(timer);
@@ -327,7 +338,7 @@ int main(int argc, char **argv) {
                     break;
                 case ALLEGRO_KEY_SPACE:
                     createBullet(player, missil, &sCount, CANTDISPAROS, VELOCITY);
-                    shutter(player, missil, bullet, enemy, nenemy, &sCount, CANTDISPAROS, font);
+                    shutter(player, missil, bullet, enemy, nenemy, &sCount, CANTDISPAROS, font, matriz);
                     break;
             }
         } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
@@ -357,7 +368,7 @@ int main(int argc, char **argv) {
         }
         
         if (sCount > CANTDISPAROS) sCount=0;
-        scene(player, enemy, nenemy, font);
+        scene(player, enemy, nenemy, font, matriz);
     }
     
     /*Limpiar memoria*/
