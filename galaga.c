@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
@@ -23,6 +24,10 @@ const int LIMITBULLET = 80;
 const int XMATRIZ = 2;
 const int YMATRIZ = 21;
 const int MOVENAVE = 4;
+const int LSX = 900;
+const int LIX = 100;
+const int LBEY = 120;
+const int LIMITENEBULLET = 590;
 
 enum KEYS {
    KEY_UP, 
@@ -94,6 +99,29 @@ void scene(galaga_g *player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_F
     al_flip_display();
 }
 
+void enemyBullet(galaga_g* player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_BITMAP *bullet, int matriz[XMATRIZ][YMATRIZ], ALLEGRO_FONT *font) {
+    srand(time(NULL));
+    int bx = rand() % LSX - LIX;
+    if (bx < 100) bx += 100;
+    else if (bx > 900) bx -= 100;  
+    int by = LBEY;
+    bool redraw;
+    
+    while(!redraw) {
+        al_clear_to_color(al_map_rgb(0,0,0));
+        
+        if (by < LIMITENEBULLET) {
+            by += VELOCITY;
+        } else redraw = true;
+        
+        al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
+        al_draw_bitmap(player->nave, player->x, player->y,0);
+        al_draw_bitmap(bullet, bx, by, 0);
+        drawEnemies(posEnemy, enemy, matriz);
+        al_flip_display();   
+    }
+}
+
 void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy,  int *disparo, int maxDisparo, ALLEGRO_FONT *font, int matriz[XMATRIZ][YMATRIZ]) {
     bool redraw;
     short cont;
@@ -150,7 +178,7 @@ int showMessage(char* winTitle, char* heading, char* message) {
         heading, 
         message,
         NULL, 
-        ALLEGRO_MESSAGEBOX_ERROR);
+        ALLEGRO_MESSAGEBOX_OK_CANCEL);
 }
 
 int main(int argc, char **argv) {
@@ -163,7 +191,8 @@ int main(int argc, char **argv) {
     ALLEGRO_BITMAP *bullet = NULL;
     ALLEGRO_BITMAP *nenemy = NULL;
     
-    int key[4] = {0, 0, 0, 0};
+    /*DESCOMENTAR PARA USAR EVENTOS DE UP Y DOWN DE TECLAS*/
+    //int key[4] = {0, 0, 0, 0};
     bool exit = true;
     int matriz[XMATRIZ][YMATRIZ];
     
@@ -305,6 +334,8 @@ int main(int argc, char **argv) {
         }
         matriz[matx][maty] = 1;
     }
+    
+    enemyBullet(player, enemy, nenemy, bullet, matriz, font);
     
     /*Valores default de la pantalla y demas componentes*/
     al_inhibit_screensaver(1);
