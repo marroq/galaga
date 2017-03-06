@@ -22,6 +22,7 @@ const int ALIGNFONT = 5;
 const int LIMITBULLET = 80;
 const int XMATRIZ = 2;
 const int YMATRIZ = 21;
+const int MOVENAVE = 4;
 
 enum KEYS {
    KEY_UP, 
@@ -46,6 +47,8 @@ typedef struct Missil {
 typedef struct Enemy {
     int x;
     int y;
+    int cx;
+    int cy;
 } enemy_g;
 
 void createBullet(galaga_g* player, missil_g *missil, int *disparo, int maxDisparo, int sy) {
@@ -76,6 +79,8 @@ void drawEnemies(enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, int matriz[XMATRIZ][Y
         }
         
         if (matriz[mx][my] == 1) {
+            posEnemy[i].cx = mx;
+            posEnemy[i].cy = my;
             al_draw_bitmap(enemy, posEnemy[i].x, posEnemy[i].y ,0);
         }
     }
@@ -91,6 +96,7 @@ void scene(galaga_g *player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_F
 
 void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy,  int *disparo, int maxDisparo, ALLEGRO_FONT *font, int matriz[XMATRIZ][YMATRIZ]) {
     bool redraw;
+    short cont;
     
     if (*disparo < maxDisparo) {
         while (!redraw) {
@@ -98,6 +104,12 @@ void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g
             
             if (missil[*disparo].y > LIMITBULLET) {
                 missil[*disparo].y -= missil[*disparo].sy;
+                for(cont=0; cont < ENEMIES; cont++) {
+                    if (missil[*disparo].x >= posEnemy[cont].x && missil[*disparo].x <= (posEnemy[cont].x + SEPARATOR) && 
+                        missil[*disparo].y >= posEnemy[cont].y && missil[*disparo].y <= posEnemy[cont].y + 30) {
+                            matriz[posEnemy[cont].cx][posEnemy[cont].cy] = 0;
+                        }
+                }
             } else redraw = true;  
             
             al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
@@ -111,30 +123,25 @@ void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g
     (*disparo)++;
 }
 
-void moverightnave(enemy_g *enemy) {
-    if (enemy->x < SCREEN_W) 
-        enemy->x += 130;
-}
-
 void moveUp(galaga_g *player) {
     /*Delimito el movimiento de la nave hasta la mitad de la pantalla*/
     if (player->y > SCREEN_H/2)
-        player->y -= 3;    
+        player->y -= MOVENAVE;    
 }
 
 void moveDown(galaga_g *player) {
     if (player->y <= SCREEN_H - 60)
-        player->y += 3;    
+        player->y += MOVENAVE;    
 }
 
 void moveRight(galaga_g *player) {
     if (player->x <= SCREEN_W-60)
-        player->x += 3;
+        player->x += MOVENAVE;
 }
 
 void moveLeft(galaga_g *player) {
     if (player->x > 60) 
-        player->x -= 3;
+        player->x -= MOVENAVE;
 }
 
 int showMessage(char* winTitle, char* heading, char* message) {
@@ -326,7 +333,7 @@ int main(int argc, char **argv) {
     while(exit) {
         al_wait_for_event(event_queue, &ev);
         
-        if(ev.type == ALLEGRO_EVENT_KEY_UP) {
+        //if(ev.type == ALLEGRO_EVENT_KEY_UP) {
             switch(ev.keyboard.keycode) {
                 case ALLEGRO_KEY_ESCAPE:
                     exit = false;
@@ -348,7 +355,7 @@ int main(int argc, char **argv) {
                     shutter(player, missil, bullet, enemy, nenemy, &sCount, CANTDISPAROS, font, matriz);
                     break;
             }
-        } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
+       /* } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
             switch(ev.keyboard.keycode) {
                 case ALLEGRO_KEY_UP:
                     moveUp(player);
@@ -372,7 +379,7 @@ int main(int argc, char **argv) {
                 moveLeft(player);
             else if(key[KEY_RIGHT]) 
                 moveRight(player);
-        }
+        }*/
         
         if (sCount > CANTDISPAROS) sCount=0;
         scene(player, enemy, nenemy, font, matriz);
