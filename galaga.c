@@ -39,6 +39,14 @@ typedef struct Missil {
     int sy;
 } missil_g;
 
+//  nave enemiga ----------------------------------------------
+typedef struct Enemy1 {
+    int x;
+    int y;
+    ALLEGRO_BITMAP *nave1;
+} enemy1_g;
+
+
 void drawPlayer(galaga_g *player) {
     al_clear_to_color(al_map_rgb(0, 0, 0));
     al_draw_bitmap(player->nave, player->x, player->y, 0);
@@ -72,6 +80,19 @@ void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, int *di
     }
     
     (*disparo)++;
+}
+
+void drawNave1(enemy1_g *enemy1 ) {
+    al_draw_bitmap(enemy1->nave1, enemy1->x, enemy1->y, 0);
+    al_flip_display();
+}
+
+
+// funcion para redibujar nave--------------------------------------
+
+void moverightnave(enemy1_g *enemy1) {
+    if (enemy1->x < SCREEN_W) 
+        enemy1->x += 130;
 }
 
 void moveUp(galaga_g *player) {
@@ -219,6 +240,22 @@ int main(int argc, char **argv) {
         al_destroy_event_queue(event_queue);
         return 0;
     }
+
+    // NAVE NEMIGA --------------------------------------------------------
+    enemy1_g *enemy1 = (enemy1_g*) malloc (sizeof(enemy1_g));
+    enemy1->nave1 = al_load_bitmap("nave1.png");
+    enemy1->x = 25;
+    enemy1->y = 100;
+    if (!enemy1->nave1) {
+        fprintf(stderr,"Failed to load shot image!");
+        al_destroy_timer(timer);
+        al_destroy_sample(music);
+        al_destroy_display(display);
+        al_destroy_event_queue(event_queue);
+        al_destroy_bitmap(player->nave);
+        return 0;
+    }
+
     
     missil_g *missil = (missil_g*)malloc(CANTDISPAROS * sizeof(missil_g));
     bullet = al_load_bitmap("shot.png");
@@ -257,6 +294,9 @@ int main(int argc, char **argv) {
     ALLEGRO_EVENT ev;
     int sCount = 0;
     
+ 
+
+
     while(exit) {
         al_wait_for_event(event_queue, &ev);
         
@@ -309,6 +349,13 @@ int main(int argc, char **argv) {
         }
         
         drawPlayer(player);
+        int x;
+        for(x = 50; x < 1000; x = x + 100){
+        moverightnave(enemy1);          
+        drawNave1(enemy1);
+        }
+
+
     }
     
     /*Limpiar memoria*/
