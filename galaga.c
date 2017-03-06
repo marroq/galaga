@@ -19,6 +19,7 @@ const int VELOCITY = 15;
 const int ENEMIES = 42;
 const int SEPARATOR = 40;
 const int ALIGNFONT = 5;
+const int LIMITBULLET = 80;
 
 enum KEYS {
    KEY_UP, 
@@ -44,12 +45,6 @@ typedef struct Enemy {
     int x;
     int y;
 } enemy_g;
-
-void drawPlayer(galaga_g *player) {
-    al_clear_to_color(al_map_rgb(0, 0, 0));
-    al_draw_bitmap(player->nave, player->x, player->y, 0);
-    al_flip_display();
-}
 
 void scene(galaga_g *player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_FONT *font) {
     al_clear_to_color(al_map_rgb(0, 0, 0));
@@ -92,7 +87,7 @@ void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g
         while (!redraw) {
             al_clear_to_color(al_map_rgb(0, 0, 0));
             
-            if (missil[*disparo].y > 20) {
+            if (missil[*disparo].y > LIMITBULLET) {
                 missil[*disparo].y -= missil[*disparo].sy;   
             } else redraw = true;  
             
@@ -361,6 +356,7 @@ int main(int argc, char **argv) {
                 moveRight(player);
         }
         
+        if (sCount > CANTDISPAROS) sCount=0;
         scene(player, enemy, nenemy, font);
     }
     
@@ -378,4 +374,3 @@ int main(int argc, char **argv) {
     
     return 0;
 }
-
