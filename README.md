@@ -7,7 +7,7 @@
 </ul>
 	
 <h3>Genero de Galaga Game.</h3>
-## Shoot 'em up
+<h5> Shoot 'em up</h5>
 Este Genero de video juego se trata que el jugador controla un personaje u objeto solitario, generalmente una nave espacial, un avión o algún otro vehículo, que dispara contra hordas de enemigos que van apareciendo en pantalla. Popularmente se los conoce también como matamarcianos o marcianitos. 
 
 
