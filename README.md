@@ -1,18 +1,12 @@
-# Videojuego Galaga -> C
-# Ciencias de la Computación III, Universidad Galileo
-
-<h1>GALAGA GAME</h1>
-
-Elaborado por..
-	 <ol>
+<h1>GALAGA GAME - > C</h1>
+<h2>Ciencias de la Computación III, Universidad Galileo</h2>
+#Elaborado por..
+<ol>
     <li>Douglas Fernando Figueroa Esquivel 13000530</li>
     <li>Diego Jose Claveria Batres 13003819</li>
-    </ol>
+</ol>
 	
-	Douglas Fernando Figueroa Esquivel 13000530
-	Diego Jose Claveria Batres 13003819
-
-GENERO:
+#GENERO:
 	Shoot 'em up
 
 DESCRIPCION:
