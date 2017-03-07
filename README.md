@@ -1,9 +1,14 @@
 # Videojuego Galaga -> C
-Ciencias de la Computación III, Universidad Galileo
+# Ciencias de la Computación III, Universidad Galileo
 
-GALAGA GAME
+<h1>GALAGA GAME</h1>
 
-INTEGRANTES:
+Elaborado por..
+	 <ol>
+    <li>Douglas Fernando Figueroa Esquivel 13000530</li>
+    <li>Diego Jose Claveria Batres 13003819</li>
+    </ol>
+	
 	Douglas Fernando Figueroa Esquivel 13000530
 	Diego Jose Claveria Batres 13003819
 
