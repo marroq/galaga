@@ -5,7 +5,16 @@
     <li>Douglas Fernando Figueroa Esquivel 13000530</li>
     <li>Diego Jose Claveria Batres 13003819</li>
 </ul>
-	
+
+<h4>Ejecución de Juego</h4>
+<ul>
+    <li>Compilar</li>
+    make galaga
+    <li>Ejecutar</li>
+    ./galaga
+</ul>
+
+
 <h4>Genero de Galaga Game.</h4>
 <h5> Shoot 'em up</h5>
 Este Genero de video juego se trata que el jugador controla un personaje u objeto solitario, generalmente una nave espacial, un avión o algún otro vehículo, que dispara contra hordas de enemigos que van apareciendo en pantalla. Popularmente se los conoce también como matamarcianos o marcianitos. 
@@ -31,5 +40,4 @@ Se tiene que buscar acabar con todas las naves enemigas para poder ganar, si las
 La diferencia con los galagas existentes es que nuestro galaga tiene naves espaciales enemigas estaticas.
 
 ## Universidad Galileo
-## Ciencias de la Computación III
-## 2017
+## Ciencias de la Computación III, 2017
