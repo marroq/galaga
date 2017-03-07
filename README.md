@@ -23,9 +23,9 @@ El juego se tiene una unica pantalla en la cual se gana si se logra eliminar tod
 
 Se tiene que buscar acabar con todas las naves enemigas para poder ganar, si las naves enemigas le disparan a uno y le pegan se termina el juego.
 
-Con las flechas de teclado se mueve la nave de ataque.
-Con la tecla SPACE se disparan los proyectiles
-Con ESC se sale del juego.
+<p>Con las flechas de teclado se mueve la nave de ataque.</p>
+<p>Con la tecla SPACE se disparan los proyectiles</p>
+<p>Con ESC se sale del juego.</p>
 
 <h4>Diferencias.</h4>
 La diferencia con los galagas existentes es que nuestro galaga tiene naves espaciales enemigas estaticas.
