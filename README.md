@@ -1,13 +1,13 @@
 <h1>GALAGA GAME - > C</h1>
 <h2>Ciencias de la Computación III, Universidad Galileo</h2>
-#Elaborado por..
+#Elaborado por.
 <ul>
     <li>Douglas Fernando Figueroa Esquivel 13000530</li>
     <li>Diego Jose Claveria Batres 13003819</li>
 </ul>
 	
-#GENERO:
-	Shoot 'em up
+#GENERO.
+	<p>Shoot 'em up</p>
 
 DESCRIPCION:
 	Galaga es un juego espacial clasico que busca eliminar todas las naves enemigas y asi poder avanzar de nivel si una bala o nave 	enemiga coliciona contra la nave del jugador pierde.
