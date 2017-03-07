@@ -26,6 +26,6 @@ Se tiene que buscar acabar con todas las naves enemigas para poder pasar de nive
 <h4>Diferencias.</h4>
 La diferencia con los galagas existentes es que nuestro galaga tiene naves espaciales enemigas estaticas.
 
-<h2>Universidad Galileo</h2>
-<h2>Ciencias de la Computación III</h2>
-<h2>2017</h2>
+## Universidad Galileo
+## Ciencias de la Computación III
+## 2017
