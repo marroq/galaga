@@ -7,10 +7,13 @@
 </ul>
 	
 <h3>Genero de Galaga Game.</h3>
-Shoot 'em up
+## Shoot 'em up
+Este Genero de video juego se trata que el jugador controla un personaje u objeto solitario, generalmente una nave espacial, un avión o algún otro vehículo, que dispara contra hordas de enemigos que van apareciendo en pantalla. Popularmente se los conoce también como matamarcianos o marcianitos. 
 
-DESCRIPCION:
-	Galaga es un juego espacial clasico que busca eliminar todas las naves enemigas y asi poder avanzar de nivel si una bala o nave 	enemiga coliciona contra la nave del jugador pierde.
+
+<h3>Descripcion.</h3>
+
+Galaga es un juego espacial clasico que busca eliminar todas las naves enemigas y asi poder avanzar de nivel si una bala o nave enemiga coliciona contra la nave del jugador pierde.
 
 DETALLE DE PANTALLAS:
 	unica pantalla.
