@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
@@ -28,6 +29,11 @@ const int LSX = 900;
 const int LIX = 100;
 const int LBEY = 120;
 const int LIMITENEBULLET = 590;
+const int SSCORE = 25;
+const int SSCOREX = 100;
+const int SSCOREPX = 205;
+const char* SCORET = "Naves destruidas : ";
+const char* TITLE = "GalaGa";
 
 enum KEYS {
    KEY_UP, 
@@ -55,6 +61,29 @@ typedef struct Enemy {
     int cx;
     int cy;
 } enemy_g;
+
+void reverse(char s[]) {
+    int c,i,j;
+    for (i = 0, j=strlen(s)-1; i<j; i++, j--) {
+        c = s[i];
+        s[i] = s[j];
+        s[j] = c;
+    }
+}
+
+void itoa(int n, char s[]) {
+    int i, sign;
+    if ((sign=n) < 0)
+        n = -n;
+    i = 0;
+    do {
+        s[i++] = n % 10 + '0';
+    } while ((n /= 10) > 0);
+    if (sign < 0)
+        s[i++] = '-';
+    s[i] = '\0';
+    reverse(s);
+}
 
 void createMatrix(int matriz[XMATRIZ][YMATRIZ]) {
     int matx, maty, c;
@@ -111,15 +140,17 @@ void drawEnemies(enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, int matriz[XMATRIZ][Y
     }
 }
 
-void scene(galaga_g *player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_FONT *font, int matriz[XMATRIZ][YMATRIZ]) {
+void scene(galaga_g *player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_FONT *font, int matriz[XMATRIZ][YMATRIZ], ALLEGRO_FONT *fscore, char *score, ALLEGRO_FONT *pts) {
     al_clear_to_color(al_map_rgb(0, 0, 0));
-    al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
+    al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, TITLE);
+    al_draw_text(fscore, al_map_rgb(255,255,255), SSCOREX, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, SCORET);
+    al_draw_text(pts, al_map_rgb(255,255,255), SSCOREPX, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, score);
     al_draw_bitmap(player->nave, player->x, player->y, 0);
     drawEnemies(posEnemy, enemy, matriz);
     al_flip_display();
 }
 
-void enemyBullet(galaga_g* player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_BITMAP *bullet, int matriz[XMATRIZ][YMATRIZ], ALLEGRO_FONT *font, int *won) {
+void enemyBullet(galaga_g* player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALLEGRO_BITMAP *bullet, int matriz[XMATRIZ][YMATRIZ], ALLEGRO_FONT *font, int *won, ALLEGRO_FONT *fscore, char *score, ALLEGRO_FONT *pts) {
     srand(time(NULL));
     int bx = rand() % LSX - LIX;
     if (bx < 100) bx += 100;
@@ -140,7 +171,9 @@ void enemyBullet(galaga_g* player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALL
             }
         } else redraw = true; 
         
-        al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
+        al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, TITLE);
+        al_draw_text(fscore, al_map_rgb(255,255,255), SSCOREX, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, SCORET);
+        al_draw_text(pts, al_map_rgb(255,255,255), SSCOREPX, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, score);
         al_draw_bitmap(player->nave, player->x, player->y,0);
         al_draw_bitmap(bullet, bx, by, 0);
         drawEnemies(posEnemy, enemy, matriz);
@@ -148,7 +181,7 @@ void enemyBullet(galaga_g* player, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy, ALL
     }
 }
 
-void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy,  int *disparo, int maxDisparo, ALLEGRO_FONT *font, int matriz[XMATRIZ][YMATRIZ], int *won) {
+void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g *posEnemy, ALLEGRO_BITMAP *enemy,  int *disparo, int maxDisparo, ALLEGRO_FONT *font, int matriz[XMATRIZ][YMATRIZ], int *won, ALLEGRO_FONT *fscore, char *score, ALLEGRO_FONT *pts) {
     bool redraw;
     short cont;
     
@@ -174,7 +207,9 @@ void shutter(galaga_g *player, missil_g *missil, ALLEGRO_BITMAP *bullet, enemy_g
                 }
             } else redraw = true;  
             
-            al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, "galaga");
+            al_draw_text(font, al_map_rgb(255,255,255), SCREEN_W/2, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, TITLE);
+            al_draw_text(fscore, al_map_rgb(255,255,255), SSCOREX, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, SCORET);
+            al_draw_text(pts, al_map_rgb(255,255,255), SSCOREPX, ALIGNFONT, ALLEGRO_ALIGN_CENTRE, score);
             al_draw_bitmap(bullet, missil[*disparo].x, missil[*disparo].y, 0);
             al_draw_bitmap(player->nave, player->x, player->y, 0);
             drawEnemies(posEnemy, enemy, matriz);
@@ -213,6 +248,8 @@ int main(int argc, char **argv) {
     ALLEGRO_EVENT_QUEUE *event_queue = NULL;
     ALLEGRO_TIMER *timer = NULL;
     ALLEGRO_FONT *font = NULL;
+    ALLEGRO_FONT *score = NULL;
+    ALLEGRO_FONT *pts = NULL;
     ALLEGRO_BITMAP *bullet = NULL;
     ALLEGRO_BITMAP *nenemy = NULL;
     
@@ -303,7 +340,9 @@ int main(int argc, char **argv) {
     }
     
     font = al_load_ttf_font("galafont.ttf",LETTER,0);
-    if (!font){
+    score = al_load_ttf_font("galafont.ttf",SSCORE,0);
+    pts = al_load_ttf_font("galafont.ttf",SSCORE,0);
+    if (!font || !score || !pts){
         fprintf(stderr, "Could not load 'pirulen.ttf'.\n");
         al_destroy_timer(timer);
         al_destroy_sample(music);
@@ -364,21 +403,22 @@ int main(int argc, char **argv) {
     al_register_event_source(event_queue, al_get_keyboard_event_source());
     al_register_event_source(event_queue, al_get_mouse_event_source());
     
-    scene(player, enemy, nenemy, font, matriz);
-    
     srand(time(NULL));
     al_start_timer(timer);
     
     al_play_sample(music, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
     al_flip_display();
-        
-    //showMessage("GALAGA","Iniciando...","Ciencias de la Computacion III");
-    //al_rest(REST);
+    
     ALLEGRO_EVENT ev;
     int sCount = 0, won = 0;
+    char buffer[50];
+    
+    scene(player, enemy, nenemy, font, matriz, score, "0", pts);
     
     while(exit) {
         al_wait_for_event(event_queue, &ev);
+        
+        itoa(won, buffer);
         
         if(ev.type == ALLEGRO_EVENT_KEY_UP) {
             switch(ev.keyboard.keycode) {
@@ -399,8 +439,8 @@ int main(int argc, char **argv) {
                     break;
                 case ALLEGRO_KEY_SPACE:
                     createBullet(player, missil, &sCount, CANTDISPAROS, VELOCITY);
-                    shutter(player, missil, bullet, enemy, nenemy, &sCount, CANTDISPAROS, font, matriz, &won);
-                    enemyBullet(player, enemy, nenemy, bullet, matriz, font, &won);
+                    shutter(player, missil, bullet, enemy, nenemy, &sCount, CANTDISPAROS, font, matriz, &won, score, buffer, pts);
+                    enemyBullet(player, enemy, nenemy, bullet, matriz, font, &won, score, buffer, pts);
                     break;
             }
         } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
@@ -430,7 +470,7 @@ int main(int argc, char **argv) {
         }
         
         if (sCount > CANTDISPAROS) sCount=0;
-        scene(player, enemy, nenemy, font, matriz);
+        scene(player, enemy, nenemy, font, matriz, score, buffer, pts);
     }
     
     /*Limpiar memoria*/
